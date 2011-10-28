@@ -9,6 +9,7 @@ class WhitelistMailProxy
     @delivery_method = options[:delivery_method]
     @regexp = options[:regexp]
     @domains = options[:domain] && Array(options[:domain])
+    @raise_error = options[:raise_error] != false
     
     raise SettingsError, "you must specify config.action_mailer.whitelist_proxy_settings to contain a :delivery_method"   unless @delivery_method
     raise SettingsError, "you must specify config.action_mailer.whitelist_proxy_settings to contain a :regexp or :domain" unless @regexp || @domains
@@ -21,7 +22,7 @@ class WhitelistMailProxy
     end
   
     if blocked.any?
-      raise BlockedDelivery.new("cannot send to #{blocked.inspect}, whitelist is #{whitelist_description}")
+      raise BlockedDelivery.new("cannot send to #{blocked.inspect}, whitelist is #{whitelist_description}") if @raise_error == true
     else
       real_delivery_method.deliver!(mail)
     end
